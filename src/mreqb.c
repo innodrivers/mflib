@@ -293,7 +293,7 @@ static mreqb_pool_t* mreqb_pool_create(void *base, unsigned long len)
 	chunk->next = NULL;
 	cyg_mutex_unlock(&pool->lock);
 
-	return 0;
+	return pool;
 }
 
 
