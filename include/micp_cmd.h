@@ -1,0 +1,24 @@
+#ifndef MICP_SCALLM_CMD
+
+#define __MAKE_MICP_CMD_NUM__
+#define MICP_SCALLM_CMD(symbol, func)		C_##symbol,
+#define MICP_MCALLS_CMD(symbol, func)		C_##symbol,
+#define MICP_BOTHCALL_CMD(symbol, func)	C_##symbol,
+
+enum {
+	C_UNKNOWN,
+#endif
+	MICP_BOTHCALL_CMD(NET_REQUEST, NULL)
+	MICP_BOTHCALL_CMD(SERIAL_REQUEST, NULL)
+	MICP_SCALLM_CMD(NAND_REQUEST, NULL)
+	MICP_MCALLS_CMD(KMT_REQUEST, NULL)
+
+#ifdef __MAKE_MICP_CMD_NUM__
+	MICP_CMD_COUNT
+};
+#undef __MAKE_MICP_CMD_NUM__
+#undef MICP_SCALLM_CMD
+#undef MICP_MCALLS_CMD
+#undef MICP_BOTHCALL_CMD
+#endif
+
