@@ -111,7 +111,7 @@ static int handle_mbserial_request(struct mreqb *reqb)
 
 	len = MREQB_GET_ARG(reqb, 1);
 	buf = reqb->extra_data;
-	buf[len] = '\0';		/* make sure end with '\0' */
+	//buf[len] = '\0';		/* make sure end with '\0' */
 
 	mf_notifier_call_chain(&port->notifier, MBSERIAL_EVENT_DATAVAIL, buf, len);
 

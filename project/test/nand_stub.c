@@ -39,7 +39,7 @@
 #endif
 
 /*-------------changeable begin------ */
-#define __NEM_IO_WIDTH	16
+#define __NEM_IO_WIDTH	8 	//16
 
 #define __NEM_PAGE_DATA_SIZE		(2048)
 #define __NEM_PAGE_SPARE_SIZE		(64)

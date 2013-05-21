@@ -130,12 +130,20 @@ static int cache_atsend_buffer(const char *buf, int len)
 	
 	cyg_mutex_unlock(&lock);
 
-	if (can_send)
+	if (can_send){
 		flush_buffered_at();
+	}
 		
 	return len;
 }
 
+static char *strnchr(const char *s, size_t count, int c)
+{
+	for (; count-- && *s != '\0'; ++s)
+		if (*s == (char)c)
+			return (char *)s;
+	return NULL;
+}
 static void cache_atrecv_buffer(const char *buf, int len)
 {
 	char *startp;
@@ -144,7 +152,7 @@ static void cache_atrecv_buffer(const char *buf, int len)
 	startp = (char*)buf;
 
 	while (len > 0) {
-		endp = strchr(startp, '\r');
+		endp = strnchr(startp,len,'\r');  	//strchr(buf, '\r');
 
 		if (endp != NULL) {
 			int num = endp - startp + 1;		/* including the '\r' character */
@@ -158,7 +166,7 @@ static void cache_atrecv_buffer(const char *buf, int len)
 			arb_end += num;
 			startp += num;
 
-			atrecv_buf[arb_end] = '\0';	/* make sure end with '\0' */
+			//atrecv_buf[arb_end] = '\0';	/* make sure end with '\0' */
 			/* submit the received AT Command to upper layer */
 			mf_ATCmdRecvCallback(atrecv_buf, arb_end);
 
