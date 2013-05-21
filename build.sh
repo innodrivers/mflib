@@ -10,13 +10,34 @@ CMDLINE="console=ttyS1,115200 init=/linuxrc mem=32M cpu1_mem=64M@0x42000000 mbox
 
 #CMDLINE=${CMDLINE}"root=nfs rw nfsroot=172.16.8.233:/home/drivers/workspace/nfs_share/p4a_root,nolock ip=dhcp"
 
-[ -f tools/patch-qboot/patch-qboot ] || {
-	cd tools/patch-qboot/
+#if patch-qboot not exists, then build it
+[ -f ${PATCH_QBOOT_TOOL} ] || {
+	echo "build patch-qboot tool..."
+	local patch_qboot_dir=`dirname ${PATCH_QBOOT_TOOL}`
+	cd ${patch_qboot_dir}
 	make
+
+	echo "tool build done."
+	echo ""
+	-cd -
 }
 
-[ -x tools/patch-qboot/patch-qboot ] ||  exit 1
+#if patch-qboot still not available, then exit
+[ -x ${PATCH_QBOOT_TOOL} ] ||  {
+	echo "no patch-qboot available!"
+	exit 1
+}
 
+echo "patch the qboot.bin ..."
 ${PATCH_QBOOT_TOOL} ${QBOOT_BIN} ${CMDLINE:+-c "${CMDLINE}"} ${MACHID:+-m ${MACHID}} ${ATAG_ADDR:+-a ${ATAG_ADDR}} ${KERNEL_ADDR:+-k ${KERNEL_ADDR}}
+echo "patch done."
+echo ""
 
-make
+echo "start to build mflib ..."
+make 1>/dev/null
+[ $? = 0 ] || {
+	echo "build mflib failed!"
+	exit 1
+}
+
+echo "mflib build done."
