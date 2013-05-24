@@ -28,7 +28,7 @@ int main( int argc, char *argv[] )
 
 	diag_printf("Hello P4A!\n");
 	while (1) {
-		cyg_thread_delay(500);
+		cyg_thread_delay(3000);
 		diag_printf("CPU1 alive %d\n", i++);
 
 	}
@@ -40,5 +40,5 @@ void cyg_user_start(void)
 {
 	mf_subsystem_init();
 
-//	netif_usbwan_init();
+	netif_usbwan_init();
 }

@@ -12,6 +12,8 @@
  * @date:	2013-04-19
  *
  */
+#define LOG_TAG		"mf_mbnetif"
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,7 +33,6 @@
 #include <mreqb_reservep.h>
 #include "mreqb_fifo.h"
 
-#define LOG_TAG		"mf_mbnetif"
 #include <mf_debug.h>
 
 //#define RX_BUF_LATE_FREE
@@ -255,6 +256,8 @@ static void netbuf_forward_thread(void *priv)
 	} while (1);
 }
 
+
+
 static int handle_new_ip_packet(struct mreqb *reqb)
 {
 	struct mf_nbuf *nbuf;
@@ -293,7 +296,7 @@ static int handle_new_ip_packet(struct mreqb *reqb)
 		mf_nbuf_queue_put(forward_backlog, nbuf);
 
 	} else {
-		MFLOGE("packet rx failed (no mreqb)\n");
+		MFLOGE("packet rx failed (no nbuf)\n");
 	}
 
 	return ret;

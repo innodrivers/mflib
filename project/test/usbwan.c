@@ -24,7 +24,7 @@
 #include <mf_comn.h>
 #include <mf_thread.h>
 #include <mf_cache.h>
-#include <mf_debug.h>
+
 #include <mf_nbuf.h>
 
 #include <nbuf_queue.h>
@@ -32,17 +32,15 @@
 
 #include "usbnet.h"
 
+#define MFLOG_TAG	"usbwan"
+#include <mf_debug.h>
+
 #define ETH_HLEN    14
 
-#define NETBUF_NUM		(256)
 
+static mf_nbuf_queue_t *backlog;	/* nbuf list going to be process */
 
-static mf_nbuf_queue_t *freebufs;		/* nbuf list can be allocated */
-static mf_nbuf_queue_t *process_backlog;	/* nbuf list going to be process */
-
-#define RESERVED_DATA_LEN		(0)
-
-
+#define RESERVED_DATA_LEN		(512)
 
 /* forward the packet to the CPU2 router */
 static void usbwan_forward_thread(void *priv)
@@ -52,13 +50,15 @@ static void usbwan_forward_thread(void *priv)
 	unsigned char* ipbuf;
 
 	while (1) {
-		nbuf = mf_nbuf_queue_waited_get(process_backlog);
+		nbuf = mf_nbuf_queue_waited_get(backlog);
 
 		ethbuf = nbuf->data;
 		ipbuf = ethbuf + ETH_HLEN;
 
 		/* remove the ether frame header, forward ip packet to CPU2 */
 		mf_NetifPacketXmit(ipbuf, nbuf->len - ETH_HLEN);
+
+		mf_netbuf_free(nbuf);
 	}
 
 }
@@ -69,14 +69,31 @@ static void usbwan_rx_thread(void *priv)
 	struct mf_nbuf *nbuf;
 	int len;
 
+	usbnet_init();
+
+	cyg_thread_delay(10000);
+
+	mf_NetifLinkupInd();
+
 	while (1) {
-		nbuf = mf_nbuf_queue_waited_get(freebufs);
+		nbuf = mf_netbuf_alloc();
+		if (nbuf == NULL) {
+			MFLOGW("no more netbuf for rx\n");
+			cyg_thread_delay(500);
+			continue;
+		}
 
 		mf_netbuf_reserve(nbuf, RESERVED_DATA_LEN);
+_requeue:
 		len = usbnet_queue_rx(nbuf->data, mf_netbuf_tailroom(nbuf));
+		if (len <= 0 || len > 1500) {
+			MFLOGE("invalid rx packet! (len=%d)", len);
+			goto _requeue;
+		}
+
 		mf_netbuf_put(nbuf, len);
-		
-		mf_nbuf_queue_put(process_backlog, nbuf);
+
+		mf_nbuf_queue_put(backlog, nbuf);
 	}
 }
 
@@ -91,22 +108,9 @@ MF_CALLBACK int mf_NetifPacketRxCallback(void* ip_packet, int packet_len)
 
 int netif_usbwan_init(void)
 {
-	int i;
-
-	usbnet_init();
-
-	freebufs = mf_nbuf_queue_create();
-	process_backlog = mf_nbuf_queue_create();
-	if (freebufs == NULL || process_backlog == NULL) {
+	backlog = mf_nbuf_queue_create();
+	if (backlog == NULL) {
 		return -1;
-	}
-
-	for (i=0; i<NETBUF_NUM; i++) {
-		struct mf_nbuf *nbuf = mf_netbuf_alloc();
-		if (nbuf == NULL)
-			break;
-
-		mf_nbuf_queue_put(freebufs, nbuf);
 	}
 
 	mf_thread_create_and_run(usbwan_rx_thread, NULL);
