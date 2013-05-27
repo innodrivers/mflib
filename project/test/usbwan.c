@@ -14,6 +14,8 @@
  * @date:	2013-04-23
  *
  */
+#define MFLOG_TAG	"usbwan"
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,7 +34,6 @@
 
 #include "usbnet.h"
 
-#define MFLOG_TAG	"usbwan"
 #include <mf_debug.h>
 
 #define ETH_HLEN    14
@@ -40,7 +41,7 @@
 
 static mf_nbuf_queue_t *backlog;	/* nbuf list going to be process */
 
-#define RESERVED_DATA_LEN		(512)
+#define RESERVED_DATA_LEN		(32)
 
 /* forward the packet to the CPU2 router */
 static void usbwan_forward_thread(void *priv)
@@ -71,7 +72,7 @@ static void usbwan_rx_thread(void *priv)
 
 	usbnet_init();
 
-	cyg_thread_delay(10000);
+	cyg_thread_delay(1000);
 
 	mf_NetifLinkupInd();
 
@@ -79,14 +80,14 @@ static void usbwan_rx_thread(void *priv)
 		nbuf = mf_netbuf_alloc();
 		if (nbuf == NULL) {
 			MFLOGW("no more netbuf for rx\n");
-			cyg_thread_delay(500);
+			cyg_thread_delay(20);
 			continue;
 		}
 
 		mf_netbuf_reserve(nbuf, RESERVED_DATA_LEN);
 _requeue:
 		len = usbnet_queue_rx(nbuf->data, mf_netbuf_tailroom(nbuf));
-		if (len <= 0 || len > 1500) {
+		if (len <= 0) {
 			MFLOGE("invalid rx packet! (len=%d)", len);
 			goto _requeue;
 		}
