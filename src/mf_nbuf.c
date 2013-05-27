@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <cyg/kernel/kapi.h>
 #include <mf_comn.h>
 #include <mf_memp.h>
 #include <mf_nbuf.h>
@@ -16,6 +16,10 @@
 #include "mem.h"
 
 #define MF_NETBUF_PAD		32		//CACHE BYTES
+
+static cyg_mutex_t	nbuf_lock;
+
+
 
 /**
  * @brief alloc a net buffer structure
@@ -30,9 +34,13 @@ struct mf_nbuf* mf_netbuf_alloc(void)
 	struct mf_nbuf *nb;
 	void *data;
 
+	cyg_mutex_lock(&nbuf_lock);
+
 	nb = mf_memp_alloc(MF_MEMP_NETBUF);
-	if (nb == NULL)
+	if (nb == NULL) {
+		cyg_mutex_unlock(&nbuf_lock);
 		return NULL;
+	}
 
 	memset((void*)nb, 0, MF_NETBUF_SIZE);
 
@@ -49,6 +57,8 @@ struct mf_nbuf* mf_netbuf_alloc(void)
 
 	mf_netbuf_reserve(nb, MF_NETBUF_PAD);
 
+	cyg_mutex_unlock(&nbuf_lock);
+
 	return nb;
 }
 
@@ -61,13 +71,14 @@ struct mf_nbuf* mf_netbuf_alloc(void)
  */
 void mf_netbuf_ref(struct mf_nbuf* p)
 {
-	DECL_MF_SYS_PROTECT(oldints);
-
 	if (p != NULL) {
-		MF_SYS_PROTECT(oldints);
+		cyg_mutex_lock(&nbuf_lock);
+
 		++(p->ref);
-		MF_SYS_UNPROTECT(oldints);
+
+		cyg_mutex_unlock(&nbuf_lock);
 	}
+
 }
 
 /**
@@ -81,12 +92,11 @@ void mf_netbuf_ref(struct mf_nbuf* p)
 void mf_netbuf_free(struct mf_nbuf *p)
 {
 	int ref;
-	DECL_MF_SYS_PROTECT(oldints);
 
 	if (p != NULL) {
-		MF_SYS_PROTECT(oldints);
+		cyg_mutex_lock(&nbuf_lock);
+
 		ref = --(p->ref);
-		MF_SYS_UNPROTECT(oldints);
 
 		/* this netbuf is no loger referenced to */
 		if (ref == 0) {
@@ -95,12 +105,19 @@ void mf_netbuf_free(struct mf_nbuf *p)
 				p->free_cb(p);
 
 			mf_memp_free(MF_MEMP_NETBUF, p);
+
 		}
+
+		cyg_mutex_unlock(&nbuf_lock);
 	}
+
+
 
 }
 
 MF_SYSINIT int mf_netbuf_init(mf_gd_t *gd)
 {
+	cyg_mutex_init(&nbuf_lock);
+
 	return 0;
 }

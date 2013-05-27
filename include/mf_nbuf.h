@@ -34,7 +34,7 @@ typedef struct mf_nbuf {
 } mf_nbuf_t;
 
 #define MF_NETBUF_SIZE		_ALIGN_UP(sizeof(struct mf_nbuf), 32)
-#define MF_PACKETBUF_SIZE	2048
+#define MF_PACKETBUF_SIZE	(2048 - MF_NETBUF_SIZE)
 
 static inline void mf_netbuf_reset_tail_pointer(struct mf_nbuf *nb)
 {
