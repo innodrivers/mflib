@@ -43,21 +43,21 @@ static mf_nbuf_queue_t *backlog;	/* nbuf list going to be process */
 
 #define RESERVED_DATA_LEN		(32)
 
+extern int mf_NetifPacketXmitAsync(struct mf_nbuf *nbuf);
+
+
 /* forward the packet to the CPU2 router */
 static void usbwan_forward_thread(void *priv)
 {
 	struct mf_nbuf *nbuf;
-	unsigned char* ethbuf;
-	unsigned char* ipbuf;
 
 	while (1) {
 		nbuf = mf_nbuf_queue_waited_get(backlog);
 
-		ethbuf = nbuf->data;
-		ipbuf = ethbuf + ETH_HLEN;
-
 		/* remove the ether frame header, forward ip packet to CPU2 */
-		mf_NetifPacketXmit(ipbuf, nbuf->len - ETH_HLEN);
+		mf_netbuf_pull(nbuf, ETH_HLEN);
+
+		mf_NetifPacketXmitAsync(nbuf);
 
 		mf_netbuf_free(nbuf);
 	}

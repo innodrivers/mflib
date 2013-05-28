@@ -146,6 +146,16 @@ MF_API int mf_NetifLinkdownInd(void)
 	return mreqb_submit(reqb);
 }
 
+#define __BUILD_NET_REQUEST_MREQB(__rq, __buf, __len)	\
+	do {	\
+		MREQB_BIND_CMD(__rq, NET_REQUEST);	\
+		MREQB_SET_SUBCMD(__rq, MBNET_CMD_IP_PACKET_NEW);	\
+		MREQB_PUSH_ARG(__rq, __buf); 	/* use as packet id */	\
+		MREQB_PUSH_ARG(__rq, __buf);	\
+		MREQB_PUSH_ARG(__rq, __len);	\
+		MREQB_PUSH_CACHE_UPDATE(__rq, __buf, __len);	\
+	} while (0)
+
 /**
  * @brief LTE downstream packet transmit
  *
@@ -165,12 +175,7 @@ MF_API int mf_NetifPacketXmit(void *ip_packet, int packet_len)
 		return -1;
 	}
 
-	MREQB_BIND_CMD(reqb, NET_REQUEST);
-	MREQB_SET_SUBCMD(reqb, MBNET_CMD_IP_PACKET_NEW);
-	MREQB_PUSH_ARG(reqb, ip_packet);	// use as packet id
-	MREQB_PUSH_ARG(reqb, ip_packet);
-	MREQB_PUSH_ARG(reqb, packet_len);
-	MREQB_PUSH_CACHE_UPDATE(reqb, ip_packet, packet_len);
+	__BUILD_NET_REQUEST_MREQB(reqb, ip_packet, packet_len);
 
 	ret = mreqb_submit_and_wait(reqb, 0);
 
@@ -179,6 +184,40 @@ MF_API int mf_NetifPacketXmit(void *ip_packet, int packet_len)
 	return ret;
 }
 
+static void xmit_async_complete(struct mreqb* reqb)
+{
+	struct mf_nbuf *nbuf = reqb->context;
+
+	mreqb_reservepool_free(req_pool, reqb);
+
+	mf_netbuf_free(nbuf);
+}
+
+MF_API int mf_NetifPacketXmitAsync(struct mf_nbuf *nbuf)
+{
+	struct mreqb *reqb;
+	int ret;
+
+	// increase reference to prevent being free
+	mf_netbuf_ref(nbuf);
+
+	reqb = mreqb_reservepool_alloc(req_pool);
+	if (reqb == NULL) {
+		MFLOGE("packet tx failed (no mreqb)\n");
+		return -1;
+	}
+
+	__BUILD_NET_REQUEST_MREQB(reqb, nbuf->data, nbuf->len);
+
+	reqb->context = nbuf;
+
+	reqb->complete = xmit_async_complete;
+
+	// no block
+	ret = mreqb_submit(reqb);
+
+	return ret;
+}
 
 #ifdef RX_BUF_LATE_FREE
 
