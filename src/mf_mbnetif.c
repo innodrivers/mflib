@@ -12,7 +12,7 @@
  * @date:	2013-04-19
  *
  */
-#define LOG_TAG		"mf_mbnetif"
+#define MFLOG_TAG		"mf_mbnetif"
 
 #include <string.h>
 #include <stdlib.h>

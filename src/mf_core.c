@@ -72,7 +72,7 @@ static mf_init_func_t mf_stage2_init_func_table[] = {
 
 
 
-int mf_subsystem_init(void)
+MF_API int mf_subsystem_init(void)
 {
 	int i;
 	int ret;

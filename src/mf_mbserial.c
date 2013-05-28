@@ -15,6 +15,8 @@
  * @date:	2013-04-09
  *
  */
+#define MFLOG_TAG		"mf_mbserial"
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,7 +33,6 @@
 #include <mreqb_reservep.h>
 #include "mreqb_fifo.h"
 
-#define LOG_TAG		"mf_mbserial"
 #include <mf_debug.h>
 
 enum MBSERIAL_SUBCMD {

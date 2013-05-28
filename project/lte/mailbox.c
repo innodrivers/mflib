@@ -12,6 +12,8 @@
  * @date:	2013-04-10
  *
  */
+#define MFLOG_TAG		"mbox_adap"
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,7 +24,6 @@
 #include <mf_mailbox.h>
 #include <libmf.h>
 
-#define LOG_TAG		"mbox_adap"
 #include <mf_debug.h>
 
 static cyg_handle_t	os_mbox_handle;

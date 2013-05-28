@@ -12,7 +12,7 @@
  * @date:	2013-05-28
  *
  */
-#define LOG_TAG		"nand_adap"
+#define MFLOG_TAG		"nand_adap"
 
 #include <string.h>
 #include <stdlib.h>
@@ -106,7 +106,7 @@ int mf_NandReadID(unsigned char *buf, int len, int *retlen)
  *
  * @return : if success return 0, otherwise return -1.
  */
-int mf_NandGetInfoCallback(unsigned long *pagesize, unsigned long *blockszie, unsigned long *chipsize, int *iswidth16)
+int mf_NandGetInfo(unsigned long *pagesize, unsigned long *blockszie, unsigned long *chipsize, int *iswidth16)
 {
 	struct mtd_info *mtd;
 	struct nand_chip *this;
@@ -141,7 +141,7 @@ int mf_NandGetInfoCallback(unsigned long *pagesize, unsigned long *blockszie, un
  *
  * @return : if success return 0, otherwise return -1.
  */
-int mf_NandChipSelectCallback(int chip)
+int mf_NandChipSelect(int chip)
 {
 	struct mtd_info *mtd;
 	struct nand_chip *this;

@@ -12,13 +12,13 @@
  * @date:	2013-05-08
  *
  */
+#define MFLOG_TAG		"netif_adap"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <libmf.h>
 
-#define LOG_TAG		"netif_adap"
 #include <mf_debug.h>
 
 #define netif_report_once()	\

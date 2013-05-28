@@ -8,6 +8,9 @@ extern "C" {
 #define MF_API
 #define MF_CALLBACK
 
+/* Global init */
+MF_API int mf_subsystem_init(void);
+
 /* AT */
 typedef void (*mf_atcmd_rx_func_t)(void *data, int len);
 

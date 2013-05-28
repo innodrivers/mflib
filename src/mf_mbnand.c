@@ -12,6 +12,8 @@
  * @date:	2012-12-28
  *
  */
+#define MFLOG_TAG		"mf_mbnand"
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,7 +31,6 @@
 
 #include "mreqb_fifo.h"
 
-#define LOG_TAG		"mf_mbnand"
 #include <mf_debug.h>
 
 static mreqb_fifo_t	nreq_fifo;
