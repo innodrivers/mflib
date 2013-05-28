@@ -58,6 +58,19 @@ static inline void mf_netbuf_put(struct mf_nbuf *nb, int len)
 	nb->len += len;
 }
 
+/* add data to the start of a buffer */
+static inline void mf_netbuf_push(struct mf_nbuf *nb, int len)
+{
+	nb->data -= len;
+	nb->len += len;
+}
+
+/* remove data from the start of a buffer */
+static inline void mf_netbuf_pull(struct mf_nbuf *nb, int len)
+{
+	nb->data += len;
+	nb->len -= len;
+}
 
 extern struct mf_nbuf* mf_netbuf_alloc(void);
 extern void mf_netbuf_ref(struct mf_nbuf* p);
