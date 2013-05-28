@@ -98,7 +98,7 @@ _requeue:
 	}
 }
 
-MF_CALLBACK int mf_NetifPacketRxCallback(void* ip_packet, int packet_len)
+MF_CALLBACK int mf_NetifPacketRx(void* ip_packet, int packet_len)
 {
 	usbnet_queue_tx(ip_packet, packet_len);
 

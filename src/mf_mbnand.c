@@ -42,7 +42,7 @@ static int handle_nand_readid(struct mreqb *rq)
 
 	arg = rq->extra_data;
 
-	ret = mf_NandReadIDCallback(arg->id, sizeof(arg->id), (int *)&arg->len);
+	ret = mf_NandReadID(arg->id, sizeof(arg->id), (int *)&arg->len);
 
 	return ret;
 }
@@ -54,13 +54,13 @@ static int handle_nand_getinfo(struct mreqb *rq)
 
 	arg = rq->extra_data;
 
-	ret = mf_NandReadIDCallback(arg->id, sizeof(arg->id), (int *)&arg->id_len);
+	ret = mf_NandReadID(arg->id, sizeof(arg->id), (int *)&arg->id_len);
 
 	if (ret) {
 		return ret;
 	}
 
-	ret = mf_NandGetInfoCallback(&arg->pagesize, &arg->blocksize, &arg->chipsize, &arg->iowidth16);
+	ret = mf_NandGetInfo(&arg->pagesize, &arg->blocksize, &arg->chipsize, &arg->iowidth16);
 
 	if (ret) {
 		return ret;
@@ -76,7 +76,7 @@ static int handle_nand_chipselect(struct mreqb *rq)
 
 	arg = rq->extra_data;
 
-	ret = mf_NandChipSelectCallback(arg->cs);
+	ret = mf_NandChipSelect(arg->cs);
 
 	return ret;
 }
@@ -88,7 +88,7 @@ static int handle_nand_readpage(struct mreqb *rq)
 
 	arg = rq->extra_data;
 
-	ret = mf_NandReadPageCallback(arg->page, arg->column, arg->buf, arg->len, (int *)&arg->retlen);
+	ret = mf_NandReadPage(arg->page, arg->column, arg->buf, arg->len, (int *)&arg->retlen);
 
 	return ret;
 }
@@ -101,7 +101,7 @@ static int handle_nand_writepage(struct mreqb *rq)
 	arg = rq->extra_data;
 	arg->status = 0;
 
-	ret = mf_NandWritePageCallback(arg->page, arg->column, arg->buf, arg->len, (int *)&arg->retlen);
+	ret = mf_NandWritePage(arg->page, arg->column, arg->buf, arg->len, (int *)&arg->retlen);
 
 	if (ret) {
 		arg->status = MB_NAND_STATUS_FAIL;
@@ -118,7 +118,7 @@ static int handle_nand_eraseblock(struct mreqb *rq)
 	arg = rq->extra_data;
 	arg->status = 0;
 
-	ret = mf_NandEraseBlockCallback(arg->page);
+	ret = mf_NandEraseBlock(arg->page);
 
 	if (ret) {
 		arg->status = MB_NAND_STATUS_FAIL;

@@ -32,7 +32,7 @@
 										\
 })
 
-__attribute__((weak)) int mf_NetifPacketRxCallback(void *ip_packet, int packet_len)
+__attribute__((weak)) int mf_NetifPacketRx(void *ip_packet, int packet_len)
 {
 	netif_report_once();
 	return -1;

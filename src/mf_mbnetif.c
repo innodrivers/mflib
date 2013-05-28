@@ -69,6 +69,23 @@ static unsigned free_pktid_end;	/* index to free_pktid_buf: most-recently-writte
 
 
 /*------------------------------------------------------------*/
+static mf_netif_rx_func_t netif_rx_cb;
+
+/**
+ * @brief register a packet receive callback function
+ *
+ * @param[in] cb : callback function to register
+ *
+ * @return : if success return 0, otherwise return a negative error code.
+ *
+ */
+MF_API int mf_NetifPacketRxCallbackRegister(mf_netif_rx_func_t cb)
+{
+	netif_rx_cb = cb;
+
+	return 0;
+}
+
 /**
  * @brief ip packet receive
  *
@@ -78,16 +95,19 @@ static unsigned free_pktid_end;	/* index to free_pktid_buf: most-recently-writte
  * @return : if success return 0, otherwise return a negative error code.
  *
  */
-MF_CALLBACK __attribute__((weak)) int mf_NetifPacketRxCallback(void *ip_packet, int packet_len)
+MF_CALLBACK __attribute__((weak)) int mf_NetifPacketRx(void *ip_packet, int packet_len)
 {
+	if (netif_rx_cb != NULL)
+		return netif_rx_cb(ip_packet, packet_len);
+
 	return 0;
 }
 
-MF_CALLBACK __attribute__((weak)) int mf_netif_rx(struct mf_nbuf *nbuf)
+__attribute__((weak)) int mf_netif_rx(struct mf_nbuf *nbuf)
 {
 	int ret;
 
-	ret = mf_NetifPacketRxCallback(nbuf->data, nbuf->len);
+	ret = mf_NetifPacketRx(nbuf->data, nbuf->len);
 
 	mf_netbuf_free(nbuf);
 

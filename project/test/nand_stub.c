@@ -12,6 +12,9 @@
  * @date:	2013-01-16
  *
  */
+
+#define MFLOG_TAG "mfnand"
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,8 +26,7 @@
 #include <mf_thread.h>
 
 #include <mf_mbnand.h>
-
-#define LOCAL_TRACE		1
+#include <mf_debug.h>
 
 #ifndef KiB
 #define KiB(x)			((x)<<10)
@@ -99,7 +101,7 @@ static inline int page_to_pageinblock(int page)
  *
  * @return - if success return 0, otherwise return -1
  */
-__attribute__((weak)) int mf_NandReadIDCallback(unsigned char* buf, int len, int *retlen)
+int mf_NandReadID(unsigned char* buf, int len, int *retlen)
 {
 	int idlen = sizeof(nstub_id) / sizeof(nstub_id[0]);
 	int i;
@@ -125,10 +127,10 @@ __attribute__((weak)) int mf_NandReadIDCallback(unsigned char* buf, int len, int
  *
  * @return - if success return 0, otherwise return -1
  */
-__attribute__((weak)) int mf_NandGetInfoCallback(unsigned long *pagesize,
-										unsigned long *blocksize, 
-										unsigned long *chipsize, 
-										int *iswidth16)
+int mf_NandGetInfo(unsigned long *pagesize,
+					unsigned long *blocksize,
+					unsigned long *chipsize,
+					int *iswidth16)
 {
 	if (pagesize)
 		*pagesize = NEM_PAGE_DATA_SIZE;
@@ -149,9 +151,8 @@ __attribute__((weak)) int mf_NandGetInfoCallback(unsigned long *pagesize,
  *
  * @return - if success return 0, otherwise return -1
  */
-__attribute__((weak)) int mf_NandChipSelectCallback(int chip)
+int mf_NandChipSelect(int chip)
 {
-//	LTRACEF("chip %d\n", chip);
 	return 0;
 }
 
@@ -166,15 +167,13 @@ __attribute__((weak)) int mf_NandChipSelectCallback(int chip)
  *
  * @return - if success return 0, otherwise return -1
  */
-__attribute__((weak)) int mf_NandReadPageCallback(int page, int column, void *buf, int len, int *retlen)
+int mf_NandReadPage(int page, int column, void *buf, int len, int *retlen)
 {
 	int block, page_in_block;
 	nandemul_block_t *nstub_block;
 	nandemul_page_t *nstub_page;
 
 	len = MIN(len, NEM_PAGE_TOTAL_SIZE - column);
-
-//	LTRACEF("read page %d, column %d\n", page, column);
 
 	block = page_to_block(page);
 	page_in_block = page_to_pageinblock(page); 
@@ -204,7 +203,7 @@ __attribute__((weak)) int mf_NandReadPageCallback(int page, int column, void *bu
  *
  * @return - if success return 0, otherwise return -1
  */
-__attribute__((weak)) int mf_NandWritePageCallback(int page, int column, const void *buf, int len, int *retlen)
+int mf_NandWritePage(int page, int column, const void *buf, int len, int *retlen)
 {
 	int block, page_in_block;
 	nandemul_block_t * nstub_block;
@@ -216,10 +215,8 @@ __attribute__((weak)) int mf_NandWritePageCallback(int page, int column, const v
 	block = page_to_block(page);
 	page_in_block = page_to_pageinblock(page); 
 
-	LTRACEF("page %d, column %d, (%d %d)\n", page, column, block, page_in_block);
-
 	if (block >= NEM_BLOCKS_PER_CHIP) {
-		dprintf(ERROR, "%s page address invalid!\n", __FUNCTION__);
+		MFLOGE("mf_NandWritePage: page address invalid!\n");
 		return -1;
 	}
 
@@ -252,7 +249,7 @@ __attribute__((weak)) int mf_NandWritePageCallback(int page, int column, const v
  *
  * @return - if success return 0, otherwise return -1
  */
-__attribute__((weak)) int mf_NandEraseBlockCallback(int page)
+int mf_NandEraseBlock(int page)
 {
 	int block;
 	int i;
@@ -260,8 +257,6 @@ __attribute__((weak)) int mf_NandEraseBlockCallback(int page)
 	nandemul_page_t * nstub_page;
 
 	block = page_to_block(page);
-
-	LTRACEF("block %d\n", block);
 
 	nstub_block = nstub.block[block];
 	if (nstub_block == NULL)

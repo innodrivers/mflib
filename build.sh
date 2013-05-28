@@ -6,7 +6,8 @@ QBOOT_BIN=src/qboot.bin
 #MACHID=3300
 #ATAG_ADDR=0x46000100
 #KERNEL_ADDR=0x46008000
-CMDLINE="console=ttyS1,115200 init=/linuxrc mem=32M cpu1_mem=64M@0x42000000 mbox_mem=2M@0x41800000 "
+CMDLINE="console=ttyS1,115200 mem=32M cpu1_mem=96M@0x40000000 mbox_mem=2M@0x41800000 "
+CMDLINE=${CMDLINE}"init=/linuxrc "
 
 #CMDLINE=${CMDLINE}"root=nfs rw nfsroot=172.16.8.233:/home/drivers/workspace/nfs_share/p4a_root,nolock ip=dhcp"
 

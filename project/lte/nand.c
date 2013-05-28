@@ -12,13 +12,13 @@
  * @date:	2013-05-28
  *
  */
+#define LOG_TAG		"nand_adap"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <libmf.h>
 
-#define LOG_TAG		"nand_adap"
 #include <mf_debug.h>
 
 #include <cyg/mtd/mtd.h>
@@ -29,106 +29,119 @@
 extern struct mtd_info mtd_nand_info[CFG_MAX_NAND_DEVICE];
 
 /**
- * get_mtd_info - get mtd device info
- * @mtd:	MTD device structure
- * @chip:	NAND chip descriptor
+ * @brief get mtd device info
  *
- * get mtd device info
+ * @param[out] mtd:	MTD device structure
+ * @param[out] chip: NAND chip descriptor
+ *
+ * @return : if success return 0, otherwise return -1.
  */
 static int get_mtd_info(struct mtd_info **mtd, struct nand_chip **chip)
 {
-	*mtd = (struct mtd_info *)(&mtd_nand_info[0]);
-	*chip = (struct nand_chip *)(*mtd)->priv;
-	if (NULL != (*mtd)->name){
-		if(0 != strcmp((*mtd)->name, "nand")){
-			MFLOGE("%s %d %s get mtd info error mtd->name%s\n",__FILE__,__LINE__, __FUNCTION__, (*mtd)->name);
+	*mtd = (struct mtd_info *) (&mtd_nand_info[0]);
+	*chip = (struct nand_chip *) (*mtd)->priv;
+
+	if (NULL != (*mtd)->name) {
+		if (0 != strcmp((*mtd)->name, "nand")) {
+			MFLOGE("get mtd info error mtd->name%s\n", (*mtd)->name);
 			return -1;
 		}
-	}else{
-		MFLOGE("%s %d %s mtd info null \n", __FILE__, __LINE__, __FUNCTION__);
+
+	} else {
+		MFLOGE("mtd info null \n");
 		return -1;
 	}
-	
-	if(NULL == *chip){
-		MFLOGE("%s %d %s chip info null \n", __FILE__, __LINE__, __FUNCTION__);
+
+	if (NULL == *chip) {
+		MFLOGE("chip info null \n");
 		return -1;
 	}
+
 	return 0;
 }
+
 /**
- * mf_NandReadIDCallback - mailbox nand readID
- * @buf:	   id buf
- * @len:	   buf len
- * @retlen:	actully got id len
+ * @brief  mailbox nand readID
+ *
+ * @param[in] buf:	id buf
+ * @param[in] len:	buf len
+ * @param[out] retlen:	actully got id len
+ *
+ * @return : if success return 0, otherwise return -1.
  */
-__attribute__((weak)) int mf_NandReadIDCallback(unsigned char *buf, int len, int *retlen)
+int mf_NandReadID(unsigned char *buf, int len, int *retlen)
 {
 	struct mtd_info *mtd;
 	struct nand_chip *this;
 	int i;
 
-	if(0 != get_mtd_info(&mtd, &this)){
+	if (0 != get_mtd_info(&mtd, &this)) {
 		return -1;
 	}
 
-	if(len > MAX_NAND_ID_LEN){
-		MFLOGE("%s %d req id len%d exceed maxlen \n", __FILE__, __LINE__,len);
+	if (len > MAX_NAND_ID_LEN) {
 		len = MAX_NAND_ID_LEN;
 	}
+
 	/* Send the command for reading device ID */
-	this->cmdfunc (mtd, NAND_CMD_READID, 0x00, -1);
+	this->cmdfunc(mtd, NAND_CMD_READID, 0x00, -1);
 
 	/* Read ID string */
-	for (i = 0; i < len; i++){
+	for (i = 0; i < len; i++) {
 		buf[i] = this->read_byte(mtd);
 	}
+
 	*retlen = len;
-	
+
 	return 0;
 }
+
 /**
- * mf_NandReadIDCallback - mailbox nand get info
- * @pagesize:	nand pagesize 
- * @blockszie:	nand blocksize 
- * @chipsize::	nand chipsize 
- * @iswidth16:	whether nand bus with is 16
+ * @brief  mailbox nand get info
  *
- * mailbox nand get info
+ * @param[out] pagesize:	nand pagesize
+ * @param[out] blockszie:	nand blocksize
+ * @param[out] chipsize::	nand chipsize
+ * @param[out] iswidth16:	whether nand bus with is 16
+ *
+ * @return : if success return 0, otherwise return -1.
  */
-__attribute__((weak)) int mf_NandGetInfoCallback(unsigned long *pagesize, unsigned long *blockszie, unsigned long *chipsize, int *iswidth16)
+int mf_NandGetInfoCallback(unsigned long *pagesize, unsigned long *blockszie, unsigned long *chipsize, int *iswidth16)
 {
 	struct mtd_info *mtd;
 	struct nand_chip *this;
-	
-	if(0 != get_mtd_info(&mtd, &this)){
+
+	if (0 != get_mtd_info(&mtd, &this)) {
 		return -1;
 	}
-	
-	if(NULL != pagesize){
+
+	if (NULL != pagesize) {
 		*pagesize = mtd->oobblock;
 	}
-	
-	if(NULL != blockszie){
+
+	if (NULL != blockszie) {
 		*blockszie = mtd->erasesize;
 	}
-	
-	if(NULL != chipsize){
+
+	if (NULL != chipsize) {
 		*chipsize = this->chipsize;
 	}
-	
-	if(NULL != iswidth16){
+
+	if (NULL != iswidth16) {
 		*iswidth16 = this->options & NAND_BUSWIDTH_16;
 	}
 
 	return 0;
 }
+
 /**
- * mf_NandChipSelectCallback - control CE line
- * @chip:	chipnumber to select, -1 for deselect
+ * @brief   control CE line
  *
- * select function for 1 chip devices
+ * @param[in] chip:	chipnumber to select, -1 for deselect
+ *
+ * @return : if success return 0, otherwise return -1.
  */
-__attribute__((weak)) int mf_NandChipSelectCallback(int chip)
+int mf_NandChipSelectCallback(int chip)
 {
 	struct mtd_info *mtd;
 	struct nand_chip *this;
@@ -141,22 +154,27 @@ __attribute__((weak)) int mf_NandChipSelectCallback(int chip)
 
 	return 0;
 }
+
 /**
- * mf_NandReadPageCallback -read  page data
- * @buf:	    buffer to store read data
- * @buf:	    buffer len
- * @page:	page number to read
- * @column:	   the column address for this command, -1 if none
- * @retlen:	actually read data len
+ * @brief   read  page data
+ *
+ * @param[in] page:	page number to read
+ * @param[in] column:	   the column address for this command, -1 if none
+ * @param[in] buf:	    buffer to store read data
+ * @param[in] len:	    buffer len
+ * @param[out] retlen:	actually read data len
+ *
+ * @return : if success return 0, otherwise return -1.
  */
-__attribute__((weak)) int mf_NandReadPageCallback(int page, int column, void *buf, int len, int *retlen)
+int mf_NandReadPage(int page, int column, void *buf, int len, int *retlen)
 {
 	struct mtd_info *mtd;
 	struct nand_chip *this;
-	
-	if(0 != get_mtd_info(&mtd, &this)){
+
+	if (0 != get_mtd_info(&mtd, &this)) {
 		return -1;
 	}
+
 	this->cmdfunc(mtd, NAND_CMD_READ0, column, page);
 	this->read_buf(mtd, buf, len);
 
@@ -164,21 +182,25 @@ __attribute__((weak)) int mf_NandReadPageCallback(int page, int column, void *bu
 
 	return 0;
 }
+
 /**
- * mf_NandWritePageCallback -write  page data
- * @buf:	    buffer to store write data
- * @buf:	    buffer len
- * @page:	page number to write
- * @column:	   the column address for this command, -1 if none
- * @retlen:	actually writen data len
+ * @brief write  page data
+ *
+ * @param[in] page:	page number to write
+ * @param[in] column: the column address for this command, -1 if none
+ * @param[in] buf:	    buffer to store write data
+ * @param[in] len:	    buffer len
+ * @param[out] retlen:	actually writen data len
+ *
+ * @return : if success return 0, otherwise return -1.
  */
-__attribute__((weak)) int mf_NandWritePageCallback(int page, int column, const void *buf, int len, int *retlen)
+int mf_NandWritePage(int page, int column, const void *buf, int len, int *retlen)
 {
 	struct mtd_info *mtd;
 	struct nand_chip *this;
 	int status = 0;
-	
-	if(0 != get_mtd_info(&mtd, &this)){
+
+	if (0 != get_mtd_info(&mtd, &this)) {
 		return -1;
 	}
 
@@ -187,38 +209,45 @@ __attribute__((weak)) int mf_NandWritePageCallback(int page, int column, const v
 	this->cmdfunc(mtd, NAND_CMD_PAGEPROG, -1, -1);
 
 	/* call wait ready function */
-	status = this->waitfunc (mtd, this, FL_WRITING);
+	status = this->waitfunc(mtd, this, FL_WRITING);
 	/* See if device thinks it succeeded */
 	if (status & 0x01) {
-		MFLOGE("%s: " "Failed write, page 0x%08x, ", __FUNCTION__, page);
-		return -EIO;
+		MFLOGE("Failed write, page 0x%08x, ", page);
+		return -1;
 	}
+
 	*retlen = len;
+
 	return 0;
 }
+
 /**
- * mf_NandEraseBlockCallback -erase  page 
- * @page:	page number to erase
-  */
-__attribute__((weak)) int mf_NandEraseBlockCallback(int page)
+ * @brief erase  page
+ *
+ * @param[in] page:	page number to erase
+ *
+ * @return : if success return 0, otherwise return -1.
+ */
+int mf_NandEraseBlock(int page)
 {
 	struct mtd_info *mtd;
 	struct nand_chip *this;
 	int status = 0;
-	
-	if(0 != get_mtd_info(&mtd, &this)){
+
+	if (0 != get_mtd_info(&mtd, &this)) {
 		return -1;
 	}
+
 	this->erase_cmd(mtd, page & this->pagemask);
 
 	status = this->waitfunc(mtd, this, FL_ERASING);
+
 	/* See if block erase succeeded */
 	if (status & NAND_STATUS_FAIL) {
-		MFLOGE("%s: Failed erase, "
-			"page 0x%08x\n", __func__, page);
-		return -EIO;
+		MFLOGE("Failed erase, page 0x%08x\n", page);
+		return -1;
 	}
-	
+
 	return 0;
 }
 

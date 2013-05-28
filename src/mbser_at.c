@@ -25,7 +25,7 @@
 
 
 static mbserial_t	channel;
-static mf_atcmd_listen_func_t	listener;
+static mf_atcmd_rx_func_t	atcmd_rx_cb;
 
 #define ATSEND_BUF_LEN		4096
 #define ATRECV_BUF_LEN		1024
@@ -46,21 +46,30 @@ static unsigned asb_end;	/* index to atsend_buf: most-recently-written-char + 1 
 static unsigned arb_end;	/* index to atrecv_buf: most-recently-written-char + 1 */
 
 /**
- * @brief
+ * @brief receive AT command
+ *
+ * @param[in] data : received AT command data
+ * @param[in] len : received AT command data length
+ *
+ * @return : void
  */
-MF_CALLBACK __attribute__((weak)) void mf_ATCmdRecvCallback(void *data, int len)
+MF_CALLBACK __attribute__((weak)) void mf_ATCmdRx(void *data, int len)
 {
-	if (listener != NULL)
-		listener(data, len);
+	if (atcmd_rx_cb != NULL)
+		atcmd_rx_cb(data, len);
 }
 
 
 /**
- * @brief
+ * @brief register a AT command receive callback function
+ *
+ * @param[in] cb : callback function to register
+ *
+ * @return : if success return 0, otherwise return a negative number.
  */
-MF_API int mf_ATCmdListenerRegister(mf_atcmd_listen_func_t cb)
+MF_API int mf_ATCmdRxCallbackRegister(mf_atcmd_rx_func_t cb)
 {
-	listener = cb;
+	atcmd_rx_cb = cb;
 
 	return 0;
 }
@@ -139,11 +148,15 @@ static int cache_atsend_buffer(const char *buf, int len)
 
 static char *strnchr(const char *s, size_t count, int c)
 {
-	for (; count-- && *s != '\0'; ++s)
-		if (*s == (char)c)
-			return (char *)s;
-	return NULL;
+	for (; count-- && *s != '\0'; ++s) {
+		if (*s == (char) c) {
+			return (char *) s;
+		}
+	}
+
+	return NULL ;
 }
+
 static void cache_atrecv_buffer(const char *buf, int len)
 {
 	char *startp;
@@ -168,7 +181,7 @@ static void cache_atrecv_buffer(const char *buf, int len)
 
 			//atrecv_buf[arb_end] = '\0';	/* make sure end with '\0' */
 			/* submit the received AT Command to upper layer */
-			mf_ATCmdRecvCallback(atrecv_buf, arb_end);
+			mf_ATCmdRx(atrecv_buf, arb_end);
 
 			arb_end = 0;
 

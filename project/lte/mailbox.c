@@ -74,7 +74,7 @@ static inline mbox_msg_t in_msg_fixup(mbox_msg_t msg)
  *
  * @note : this function should implement by PS.
  */
-MF_CALLBACK __attribute__((weak)) int mf_MboxMsgSendToCpu2Callback(unsigned long msg)
+MF_CALLBACK __attribute__((weak)) int mf_MboxMsgSendToCpu2(unsigned long msg)
 {
 	return 0;
 }
@@ -112,7 +112,7 @@ int mf_mbox_msg_put(mf_mbox_t _mbox, mbox_msg_t msg)
 {
 	msg = out_msg_fixup(msg);
 
-	return mf_MboxMsgSendToCpu2Callback(msg);
+	return mf_MboxMsgSendToCpu2(msg);
 }
 
 /**
