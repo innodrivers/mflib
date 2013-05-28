@@ -40,6 +40,7 @@ enum {
 #define mf_printf(level, ...)	__mf_log_print(level, NULL, __VA_ARGS__)
 
 extern void __mf_log_print(int level, const char* tag, const char* fmt, ...);
+extern void mf_set_debug_level(int level);
 
 
 
