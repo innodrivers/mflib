@@ -24,10 +24,11 @@
 #include <mf_comn.h>
 #include <libmf.h>
 
-static CYGBLD_ATTRIB_ALIGN(4) unsigned char __noncached_buffer[0x100000] CYGBLD_ATTRIB_SECTION(".dma");
+/* memory for mailbox mreqb & extra data, one half for CPU1, and another one half for CPU2 */
+static CYGBLD_ATTRIB_ALIGN(4) unsigned char __noncached_buffer[0x200000] CYGBLD_ATTRIB_SECTION(".dma");
 //TODO : must be specified manually
 #define NONCACHED_BUFFER_START	((unsigned long)__noncached_buffer)
-#define NONCACHED_BUFFER_LEN	(sizeof(__noncached_buffer))
+#define NONCACHED_BUFFER_LEN	(sizeof(__noncached_buffer) >> 1)
 
 
 MF_SYSINIT extern int mf_memp_init(mf_gd_t *gd);
