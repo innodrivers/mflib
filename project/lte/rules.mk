@@ -6,8 +6,7 @@ DEFINES +=	\
 
 LOCAL_OBJS =	\
 	mailbox.o	\
-	nand.o		\
-	netif.o
+	nand.o
 
 SUBDIRS =
 
