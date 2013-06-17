@@ -31,16 +31,6 @@
 
 extern void set_irq_source(devIntrSource_E SourceNum, bool IRQorFIQ, unsigned char Priority);
 
-static inline mbox_msg_t out_msg_fixup(mbox_msg_t msg)
-{
-	return msg;
-}
-
-static inline mbox_msg_t in_msg_fixup(mbox_msg_t msg)
-{
-	return msg;
-}
-
 /*--------------------------------------------------------------*/
 static unsigned long p4a_mbox_base = P4A_MBOX_BASE;
 static int mbox_irqnum = IRQ_MAILBOX_DSP2ARM;

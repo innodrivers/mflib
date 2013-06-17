@@ -10,6 +10,8 @@
  * @author : drivers@innofidei.com
  *
  */
+#define MFLOG_TAG		"main"
+
 #include <stdio.h>
 #include <cyg/kernel/kapi.h>
 #include <cyg/hal/hal_arch.h>
@@ -26,10 +28,10 @@ int main( int argc, char *argv[] )
 {
 	int i = 0;
 
-	diag_printf("Hello P4A!\n");
+	MFLOGI("Hello P4A!\n");
 	while (1) {
 		cyg_thread_delay(3000);
-		diag_printf("CPU1 alive %d\n", i++);
+		MFLOGI("CPU1 alive %d\n", i++);
 
 	}
 }
