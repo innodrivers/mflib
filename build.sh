@@ -1,15 +1,22 @@
 #!/bin/sh
 
+[ -z ${BOARD} ] && {
+	echo "please specifies BOARD=xxx. e.g."
+	echo "BOARD=p4abu ./build.sh"
+	exit 1
+}
+
 PATCH_QBOOT_TOOL=tools/patch-qboot/patch-qboot
-QBOOT_BIN=src/qboot.bin
+QBOOT_BIN=board/${BOARD}/qboot.bin
 
 #MACHID=3300
 #ATAG_ADDR=0x46000100
 #KERNEL_ADDR=0x46008000
 CMDLINE="console=ttyS1,115200 mem=32M cpu1_mem=96M@0x40000000 mbox_mem=2M@0x41800000 "
-CMDLINE=${CMDLINE}"init=/linuxrc "
-
-#CMDLINE=${CMDLINE}"root=nfs rw nfsroot=172.16.8.233:/home/drivers/workspace/nfs_share/p4a_root,nolock ip=dhcp"
+CMDLINE=${CMDLINE}"init=/etc/preinit "
+#CMDLINE=${CMDLINE}"init=/linuxrc "
+CMDLINE=${CMDLINE}"root=/dev/mtdblock1 rw rootfstype=squashfs "
+#CMDLINE=${CMDLINE}"root=nfs rw nfsroot=172.16.8.97:/home/drivers/workspace/nfs_share/rootfs,nolock ip=dhcp"
 
 #if patch-qboot not exists, then build it
 [ -f ${PATCH_QBOOT_TOOL} ] || {

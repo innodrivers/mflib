@@ -21,6 +21,7 @@ MIFI_APP ?= mf_main
 
 BUILDDIR := build-$(PROJECT)-$(BOARD)
 CONFIGHEADER := $(BUILDDIR)/config.h
+CPU2BOOTBIN := qboot.bin
 
 
 BUILDTIME := $(shell date "+%Y.%m.%d-%H:%M:%S")
@@ -35,7 +36,7 @@ LDFLAGS += -ltarget
 CFLAGS += -I$(ECOS_KERNEL)/include -include $(CONFIGHEADER)
 
 
-SRCDEPS	:= $(CONFIGHEADER)
+SRCDEPS	:= $(CONFIGHEADER) $(CPU2BOOTBIN)
 
 OBJS :=
 
@@ -74,6 +75,12 @@ $(TARGETELF) : $(TARGETLIB)
 $(TARGETLIB): $(ALLOBJS)
 	$(XAR) rcs $@ $(ALLOBJS)
 
+cpu2bootbin:
+
+$(CPU2BOOTBIN) : cpu2bootbin
+	@rm -f $(CPU2BOOTBIN)
+	@ln -s board/$(BOARD)/qboot.bin $(CPU2BOOTBIN)
+
 configheader:
 
 $(CONFIGHEADER): configheader
@@ -110,4 +117,5 @@ clean:
 	-rm -f $(ALLOBJS) 
 	-rm -f $(TARGETLIB)
 	-rm -f $(TARGETBIN) $(TARGETELF)
+	-rm -f $(CPU2BOOTBIN)
 
