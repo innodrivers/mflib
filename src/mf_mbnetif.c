@@ -257,7 +257,7 @@ static int send_packet_free_cmd(u32 pktid[], int num)
 	MREQB_BIND_CMD(reqb, NET_REQUEST);
 	MREQB_SET_SUBCMD(reqb, MBNET_CMD_IP_PACKET_FREE);
 
-	count = MAX(num , 8);		// 8 : mreqb max argument number
+	count = MIN(num , 8);		// 8 : mreqb max argument number
 	for (i=0; i<count; i++) {
 		MREQB_PUSH_ARG(reqb, pktid[i]);
 	}
