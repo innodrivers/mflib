@@ -25,8 +25,7 @@
 #include <libmf.h>
 
 /* memory for mailbox mreqb & extra data, one half for CPU1, and another one half for CPU2 */
-static CYGBLD_ATTRIB_ALIGN(4) unsigned char __noncached_buffer[0x200000] CYGBLD_ATTRIB_SECTION(".mailbox");
-
+static CYGBLD_ATTRIB_ALIGN(4) unsigned char __noncached_buffer[0x200000] CYGBLD_ATTRIB_SECTION(".dma");
 //TODO : must be specified manually
 #define NONCACHED_BUFFER_START	((unsigned long)__noncached_buffer)
 #define NONCACHED_BUFFER_LEN	(sizeof(__noncached_buffer) >> 1)

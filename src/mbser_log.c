@@ -26,10 +26,7 @@
 
 #define LOG_BUFSZ	(4096)
 
-static char log_buffer[LOG_BUFSZ];
-
-static char *log_buf = log_buffer;
-
+static char *log_buf;
 static mbserial_t channel;
 static cyg_mutex_t lock;
 static int can_print;
@@ -179,6 +176,9 @@ static struct mf_notifier_block log_notifier = {
 MF_SYSINIT int mf_log_init(mf_gd_t *gd)
 {
 	cyg_mutex_init(&lock);
+	log_buf = (char*)malloc(LOG_BUFSZ);
+	if (log_buf == NULL)
+		return -1;
 
 	channel = mf_mbserial_get(gd->log_mbser_line, &log_notifier);
 	if (channel == MBSERIAL_INVALID)
@@ -186,4 +186,3 @@ MF_SYSINIT int mf_log_init(mf_gd_t *gd)
 
 	return 0;
 }
-
