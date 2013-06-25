@@ -30,8 +30,10 @@ static mf_atcmd_rx_func_t	atcmd_rx_cb;
 #define ATSEND_BUF_LEN		4096
 #define ATRECV_BUF_LEN		1024
 
-static char* atsend_buf;
-static char* atrecv_buf;
+static char at_buf[ATSEND_BUF_LEN + ATRECV_BUF_LEN];
+
+static char* atsend_buf = at_buf;
+static char* atrecv_buf = at_buf + ATSEND_BUF_LEN;
 
 static int can_send;
 static cyg_mutex_t lock;
@@ -166,7 +168,7 @@ static void cache_atrecv_buffer(const char *buf, int len)
 
 	while (len > 0) {
 		endp = strnchr(startp,len,'\r');  	//strchr(buf, '\r');
-
+		
 		if (endp != NULL) {
 			int num = endp - startp + 1;		/* including the '\r' character */
 			if (num < len && *(endp+1)=='\n') {
@@ -249,12 +251,7 @@ static struct mf_notifier_block at_notifier = {
 
 MF_SYSINIT int mf_atcmd_init(mf_gd_t *gd)
 {
-	atsend_buf = (char*)malloc(ATSEND_BUF_LEN + ATRECV_BUF_LEN);
-	if (atsend_buf == NULL)
-		return -1;
-
-	memset(atsend_buf, 0, ATSEND_BUF_LEN + ATRECV_BUF_LEN);
-	atrecv_buf = atsend_buf + ATSEND_BUF_LEN;
+	
 	cyg_mutex_init(&lock);
 	
 	channel = mf_mbserial_get(gd->at_mbser_line, &at_notifier);
