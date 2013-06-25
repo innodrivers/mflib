@@ -87,6 +87,11 @@ static int handle_mbserial_request(struct mreqb *reqb)
 
 	port = allports[line];
 
+	if (NULL == port){
+		MFLOGE("port%d not inited\n", __FUNCTION__, line);
+		return -1;
+	}
+
 	switch (cmd) {
 	case MBSERIAL_CMD_STARTUP:
 		port->status |= PORT_STATUS_UP;
